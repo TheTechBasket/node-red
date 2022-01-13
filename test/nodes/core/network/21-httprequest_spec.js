@@ -42,6 +42,8 @@ describe('HTTP Request Node', function() {
     var testProxyPort = 10444;
     var testProxyServerAuth;
     var testProxyAuthPort = 10554;
+    var testSslClientServer;
+    var testSslClientPort = 10664;
 
     //save environment variables
     var preEnvHttpProxyLowerCase;
@@ -57,6 +59,7 @@ describe('HTTP Request Node', function() {
         testServer = stoppable(http.createServer(testApp));
         testServer.listen(testPort,function(err) {
             testSslPort += 1;
+            console.log("ssl port", testSslPort);
             var sslOptions = {
                 key:  fs.readFileSync('test/resources/ssl/server.key'),
                 cert: fs.readFileSync('test/resources/ssl/server.crt')
@@ -75,11 +78,29 @@ describe('HTTP Request Node', function() {
                 */
             };
             testSslServer = stoppable(https.createServer(sslOptions,testApp));
-            testSslServer.listen(testSslPort);
+            testSslServer.listen(testSslPort, function(err){
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log("started testSslServer");
+                }
+            });
+
+            testSslClientPort += 1;
+            var sslClientOptions = {
+                key:  fs.readFileSync('test/resources/ssl/server.key'),
+                cert: fs.readFileSync('test/resources/ssl/server.crt'),
+                ca: fs.readFileSync('test/resources/ssl/server.crt'),
+                requestCert: true
+            };
+            testSslClientServer = stoppable(https.createServer(sslClientOptions, testApp));
+            testSslClientServer.listen(testSslClientPort, function(err){
+                console.log("ssl-client", err)
+            });
 
             testProxyPort += 1;
-            testProxyServer = stoppable(httpProxy(http.createServer()))            
-            
+            testProxyServer = stoppable(httpProxy(http.createServer()))
+
             testProxyServer.on('request', function(req,res){
                 if (!res.headersSent) {
                     res.setHeader("x-testproxy-header", "foobar")
@@ -119,6 +140,10 @@ describe('HTTP Request Node', function() {
 
     function getSslTestURL(url) {
         return "https://localhost:"+testSslPort+url;
+    }
+
+    function getSslClientTestURL(url) {
+        return "https://localhost:"+testSslClientPort+url;
     }
 
     function getDifferentTestURL(url) {
@@ -267,6 +292,27 @@ describe('HTTP Request Node', function() {
                 url: req.originalUrl
             });
         })
+        testApp.get('/returnError/:code', function(req,res) {
+            res.status(parseInt(req.params.code)).json({gotError:req.params.code});
+        })
+
+        testApp.get('/rawHeaders', function(req,res) {
+            const result = {};
+            for (let i=0;i<req.rawHeaders.length;i++) {
+                result[req.rawHeaders[i]] = req.rawHeaders[i+1]
+            }
+            res.json({
+                headers:result
+            });
+        })
+
+        testApp.get('/getClientCert', function(req,res) {
+            if (req.client.authorized) {
+                res.send('hello');
+            } else {
+                res.status(401).send();
+            }
+        })
         startServer(function(err) {
             if (err) {
                 done(err);
@@ -280,7 +326,9 @@ describe('HTTP Request Node', function() {
             testProxyServer.stop(() => {
                 testProxyServerAuth.stop(() => {
                     testSslServer.stop(() => {
-                        helper.stopServer(done);
+                        testSslClientServer.stop(() => {
+                            helper.stopServer(done);
+                        })
                     });
                 });
             });
@@ -1044,8 +1092,6 @@ describe('HTTP Request Node', function() {
                 n1.receive({payload:"foo", requestTimeout: 100});
             });
         });
-
-
         it('should append query params to url - obj', function(done) {
             var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"GET",paytoqs:true,ret:"obj",url:getTestURL('/getQueryParams')},
                 {id:"n2", type:"helper"}];
@@ -1068,6 +1114,84 @@ describe('HTTP Request Node', function() {
                 n1.receive({payload:{a:1,b:2,c:3}});
             });
         });
+
+        it('should send a msg for non-2xx response status - 400', function(done) {
+            var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"obj",url:getTestURL('/returnError/400')},
+            {id:"n2", type:"helper"}];
+            helper.load(httpRequestNode, flow, function() {
+                var n1 = helper.getNode("n1");
+                var n2 = helper.getNode("n2");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property('payload',{ gotError: '400' });
+                        msg.should.have.property('statusCode',400);
+                        done();
+                    } catch(err) {
+                        done(err);
+                    }
+                });
+                n1.receive({});
+            })
+        });
+        it('should send a msg for non-2xx response status - 404', function(done) {
+            var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"obj",url:getTestURL('/returnError/404')},
+            {id:"n2", type:"helper"}];
+            helper.load(httpRequestNode, flow, function() {
+                var n1 = helper.getNode("n1");
+                var n2 = helper.getNode("n2");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property('payload',{ gotError: '404' });
+                        msg.should.have.property('statusCode',404);
+                        done();
+                    } catch(err) {
+                        done(err);
+                    }
+                });
+                n1.receive({});
+            })
+        });
+        it('should send a msg for non-2xx response status - 500', function(done) {
+            var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"obj",url:getTestURL('/returnError/500')},
+            {id:"n2", type:"helper"}];
+            helper.load(httpRequestNode, flow, function() {
+                var n1 = helper.getNode("n1");
+                var n2 = helper.getNode("n2");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property('payload',{ gotError: '500' });
+                        msg.should.have.property('statusCode',500);
+                        done();
+                    } catch(err) {
+                        done(err);
+                    }
+                });
+                n1.receive({});
+            })
+        });
+
+        it('should encode the url to handle special characters', function(done) {
+            var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"obj"},
+                {id:"n2", type:"helper"}];
+            helper.load(httpRequestNode, flow, function() {
+                var n1 = helper.getNode("n1");
+                var n2 = helper.getNode("n2");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property('payload',{
+                            query:{ a: 'b', c:[ 'T24,0°|H80%|W S8,3m/s' ] },
+                            url: '/getQueryParams?a=b&c[0].Text=T24,0%C2%B0|H80%25|W%20S8,3m/s'
+                        });
+                        msg.should.have.property('statusCode',200);
+                        msg.should.have.property('headers');
+                        done();
+                    } catch(err) {
+                        done(err);
+                    }
+                });
+                n1.receive({url: getTestURL('/getQueryParams')+"?a=b&c[0].Text=T24,0°|H80%|W%20S8,3m/s"});
+            });
+        })
     });
 
     describe('HTTP header', function() {
@@ -1269,6 +1393,8 @@ describe('HTTP Request Node', function() {
         });
 
         it('should convert all HTTP headers into lower case', function(done) {
+            // This is a bad test. Express lower-cases headers in the `req.headers` object,
+            // so this is actually testing express, not the original request.
             var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"POST",ret:"obj",url:getTestURL('/postInspect')},
                 {id:"n2", type:"helper"}];
             helper.load(httpRequestNode, flow, function() {
@@ -1290,6 +1416,26 @@ describe('HTTP Request Node', function() {
             });
         });
 
+        it('should keep HTTP header case as provided by the user', function(done) {
+            var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"obj",url:getTestURL('/rawHeaders')},
+                {id:"n2", type:"helper"}];
+            helper.load(httpRequestNode, flow, function() {
+                var n1 = helper.getNode("n1");
+                var n2 = helper.getNode("n2");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property('statusCode',200);
+                        msg.payload.should.have.property('headers');
+                        msg.payload.headers.should.have.property('Content-Type').which.startWith('text/plain');
+                        msg.payload.headers.should.have.property('X-Test-HEAD', "foo");
+                        done();
+                    } catch(err) {
+                        done(err);
+                    }
+                });
+                n1.receive({payload:"foo", headers: { 'Content-Type':'text/plain', "X-Test-HEAD": "foo"}});
+            });
+        });
         it('should receive HTTP header', function(done) {
             var flow = [{id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"txt",url:getTestURL('/headersInspect')},
                 {id:"n2", type:"helper"}];
@@ -1405,6 +1551,60 @@ describe('HTTP Request Node', function() {
                 });
                 n1.receive({payload:"foo"});
             });
+        });
+
+        it('should use tls-config and verify serverCert', function(done) {
+            var flow = [
+                {id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"txt",url:getSslTestURL('/text'),tls:"n3"},
+                {id:"n2", type:"helper"},
+                {id:"n3", type:"tls-config", cert:"test/resources/ssl/server.crt", key:"test/resources/ssl/server.key", ca:"test/resources/ssl/server.crt", verifyservercert:true}];
+            var testNodes = [httpRequestNode, tlsNode];
+            helper.load(testNodes, flow, function() {
+                var n3 = helper.getNode("n3");
+                var n2 = helper.getNode("n2");
+                var n1 = helper.getNode("n1");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property('payload','hello');
+                        msg.should.have.property('statusCode',200);
+                        msg.should.have.property('headers');
+                        msg.headers.should.have.property('content-length',''+('hello'.length));
+                        msg.headers.should.have.property('content-type').which.startWith('text/html');
+                        msg.should.have.property('responseUrl').which.startWith('https://');
+                        done();
+                    } catch(err) {
+                        done(err);
+                    }
+                });
+                n1.receive({payload:"foo"});
+            });
+        });
+
+        it('should use tls-config and send client cert', function(done) {
+            var flow = [
+                {id:"n1",type:"http request",wires:[["n2"]],method:"GET",ret:"txt",url:getSslClientTestURL('/getClientCert'),tls:"n3"},
+                {id:"n2", type:"helper"},
+                {id:"n3", type:"tls-config", cert:"test/resources/ssl/server.crt", key:"test/resources/ssl/server.key", ca:"test/resources/ssl/server.crt", verifyservercert:false}];
+            var testNodes = [httpRequestNode,tlsNode];
+            helper.load(testNodes, flow, function() {
+                var n3 = helper.getNode("n3");
+                var n2 = helper.getNode("n2");
+                var n1 = helper.getNode("n1");
+                n2.on("input", function(msg) {
+                    try {
+                        msg.should.have.property('payload','hello');
+                        msg.should.have.property('statusCode',200);
+                        msg.should.have.property('headers');
+                        msg.headers.should.have.property('content-length',''+('hello'.length));
+                        msg.headers.should.have.property('content-type').which.startWith('text/html');
+                        msg.should.have.property('responseUrl').which.startWith('https://');
+                        done();
+                    } catch(err) {
+                        done(err);
+                    }
+                });
+                n1.receive({payload:"foo"});
+            })
         });
 
         //Removing HTTP Proxy testcases as GOT + Proxy_Agent doesn't work with mock'd proxy
@@ -1600,7 +1800,7 @@ describe('HTTP Request Node', function() {
                 n1.receive({payload:"foo"});
             });
         });
-        
+
     });
     describe('authentication', function() {
 
@@ -1664,7 +1864,7 @@ describe('HTTP Request Node', function() {
             });
         });
 
-        // Removed the Proxy Tests until a new mock proxy can be replaced with 
+        // Removed the Proxy Tests until a new mock proxy can be replaced with
         // one that supports HTTP Connect verb
         /* */
         it('should authenticate on proxy server', function(done) {
@@ -1771,7 +1971,7 @@ describe('HTTP Request Node', function() {
             });
         });
         */
-        
+
     });
 
     describe('file-upload', function() {

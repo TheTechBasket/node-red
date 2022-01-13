@@ -1,3 +1,278 @@
+#### 2.1.5: Maintenance Release
+
+Runtime
+
+ - Handle reporting error location when stack is truncated (#3346) @knolleary
+ - Initialize passport when only adminAuth.tokens is set (#3343) @knolleary
+ - Add log logging (#3342) @knolleary
+
+Editor
+
+ - Fix copy buttons on the debug window (another method) (#3331) @kazuhitoyokoi
+ - Add Japanese translations for hidden flow (#3302) @kazuhitoyokoi
+ - Improve jsonata legacy mode detection regex (#3345) @knolleary
+ - Fix generating flow name with incrementing number (#3347) @knolleary
+ - resume focus after import/export dialog close (#3337) @HiroyasuNishiyama
+ - Fix findPreviousVisibleTab action (#3321) @knolleary
+ - Fix storing hidden tab state when not hidden via action (#3312) @knolleary
+ - Avoid adding empty env properties to tabs/groups (#3311) @knolleary
+ - Fix hide icon in tour guide (#3301) @kazuhitoyokoi
+
+Nodes
+
+ - File: Update file node examples according to node name change (#3335) @HiroyasuNishiyama
+ - Filter (RBE): Fix for filter node narrrowbandEq mode start condition failure (#3339) @dceejay
+ - Function: Prevent function scrollbar from obscuring expand button (#3348) @knolleary
+ - Function: load extralibs when expanding monaco. fixes #3319 (#3334) @Steve-Mcl
+ - Function: Update Function to use correct api to access env vars (#3310) @knolleary
+ - HTTP Request: Fix basic auth with empty username or password (#3325) @hardillb
+ - Inject: Fix incorrect clearing of blank payload property in Inject node (#3322) @knolleary
+ - Link Call: add link call example (#3336) @HiroyasuNishiyama
+ - WebSocket: Only setup ws client heartbeat once it is connected (#3344) @knolleary
+ - Update Japanese translations in node help (#3332) @kazuhitoyokoi
+
+
+#### 2.1.4: Maintenance Release
+
+Runtime
+
+ - fix env var access using $parent for groups (#3278) @HiroyasuNishiyama
+ - Add proper error handling for 404 errors when serving debug files (#3277) @knolleary
+ - Add Japanese translations for Node-RED v2.1.0-beta.1 (#3179) @kazuhitoyokoi
+ - Include full user object on login audit events (#3269) @knolleary
+ - Remove styling from de locale files (#3237) @knolleary
+
+Editor
+
+ - Change tab hide button icon to an eye and add search option (#3282) @knolleary
+ - Fix i18n handling of namespaces with spaces in (#3281) @knolleary
+ - Trigger change event when autoComplete fills in input (#3280) @knolleary
+ - Apply CN i18n fix (#3279) @knolleary
+ - fix select menu label of config node to use paletteLabel (#3273) @HiroyasuNishiyama
+ - fix removed tab not to cause node conflict (#3275) @HiroyasuNishiyama
+ - Group diff fix (#3239) @knolleary
+ - Only toggle disabled workspace flag if on activeWorkspace (#3252) @knolleary
+ - Do not show status for disabled nodes (#3253) @knolleary
+ - Set dimension value for tour guide (#3265) @kazuhitoyokoi
+ - Avoid redundant initialisation of TypedInput type (#3263) @knolleary
+ - Don't let themes change flow port label color (#3270) @bonanitech
+ - Fix treeList gutter calculation to handle floating gutters (#3238) @knolleary
+
+Nodes
+
+- Debug: Handle RegExp types in Debug sidebar (#3251) @knolleary
+- Delay: fix 2nd output when in rate limit per topic modes (#3261) @dceejay
+- Link: fix to show link target when selected (#3267) @HiroyasuNishiyama
+- Inject: Do not modify inject node props in oneditprepare (#3242) @knolleary
+- HTTP Request: HTTP Basic Auth should always add : between username and password even if empty (#3236) @hardillb
+
+#### 2.1.3: Maintenance Release
+
+Runtime
+
+ - Update gen-publish script to update 'next' tag for main releases
+ - Add environment variable to enable/disable tours (#3221) @hardillb
+ - Fix loading non-default language files leaving runtime in wrong locale (#3225) @knolleary
+
+Editor
+
+ - Refresh editor settings whenever a node is added or enabled (#3227) @knolleary
+ - Revert spinner css change that made it shrink in some cases (#3229) @knolleary
+ - Fix import notification message when importing config nodes (#3224) @knolleary
+ - Handle changing types of TypedInput repeatedly (#3223) @knolleary
+
+
+#### 2.1.2: Maintenance Release
+
+
+Runtime
+
+ - node-red-pi: Remove bash dependency (#3216) @a16bitsysop
+
+Editor
+
+ - Improved regex for markdown renderer (#3213) @GerwinvBeek
+ - Fix TypedInput initialisation (#3220) @knolleary
+
+Nodes
+
+ - MQTT: fix datatype in node config not used. fixes #3215 (#3219) @Steve-Mcl
+
+#### 2.1.1: Maintenance Release
+
+Editor
+
+ - Ensure tourGuide popover doesn't fall offscreen (#3212) @knolleary
+ - Fix issue with old inject nodes that migrated topic to 'string' type (#3210) @knolleary
+ - Add cache-busting query params to index.mst (#3211) @knolleary
+ - Fix TypedInput validation of type without options (#3207) @knolleary
+
+#### 2.1.0: Milestone Release
+
+Editor
+
+ - Position popover properly on a scrolled page
+ - Fixes from 2.1.0-beta.2 (#3202) @knolleary
+
+Nodes
+
+- Link Out: Fix saving link out node links (#3201) @knolleary
+ - Switch: Refix #3170 - copy switch rule type when adding new rule
+ - TCP Request: Add string option to TCP request node output (#3204) @dceejay
+
+#### 2.1.0-beta.2: Beta Release
+
+Editor
+
+ - Fix switching projects (#3199) @knolleary
+ - Use locale setting when installing/enabling node (#3198) @knolleary
+ - Do not show projects-wecome dialog until welcome tour completes (#3197) @knolleary
+ - Fix converting selection to subflow (#3196) @knolleary
+ - Avoid conflicts with native browser cmd-ctrl type shortcuts (#3195) @knolleary
+ - Ensure message tools stay attached to top-level entry in Debug/Context (#3186) @knolleary
+ - Ensure tab state updates properly when toggling enable state (#3175) @knolleary
+ - Improve handling of long labels in TreeList (#3176) @knolleary
+ - Shift-click tab scroll arrows to jump to start/end (#3177) @knolleary
+
+Runtime
+
+ - Update package dependencies
+ - Update to latest node-red-admin
+
+Nodes
+
+ - Dynamic MQTT connections (#3189)
+ - Link: Filter out Link Out Return nodes in Link In edit dialog Fixes #3187
+ - Link: Fix link call label (#3200) @knolleary
+ - Debug: Redesign debug filter options and make them persistant (#3183) @knolleary
+ - Inject: Widen Inject interval box for >1 digit (#3184) @knolleary
+ - Switch: Fix rule focus when switch 'otherwise' rule is used (#3185) @knolleary
+
+#### 2.1.0-beta.1: Beta Release
+
+Editor
+
+ - Add Tour Guide component (#3136) @knolleary
+ - Allow tabs to be hidden (#3120) @knolleary
+ - Add align actions to editor (#3110) @knolleary
+ - Add support of environment variable for tab & group (#3112) @HiroyasuNishiyama
+ - Add autoComplete widget and add to TypedInput for msg. props (#3171) @knolleary
+ - Render node documentation to node-red style guide when written in markdown. (#3169) @Steve-Mcl
+ - Allow colouring of tab icon svg (#3140) @harmonic7
+ - Restore tab selection after merging conflicts (#3151) @GerwinvBeek
+ - Fix serving of theme files on Windows (#3154) @knolleary
+ - Ensure config-node select inherits width properly from input (#3155) @knolleary
+ - Do better remembering TypedInput values whilst switching types (#3159) @knolleary
+ - Update monaco to 0.28.1 (#3153) @knolleary
+ - Improve themeing of tourGuide (#3161) @knolleary
+ - Allow a node to specify a filter for the config nodes it can pick from (#3160) @knolleary
+ - Allow RED.notify.update to modify any notification setting (#3163) @knolleary
+ - Fix typo in ko editor.json Fixes #3119
+ - Improve RED.actions api to ensure actions cannot be overridden
+ - Ensure treeList row has suitable min-height when no content Fixes #3109
+ - Refactor edit dialogs to use separate edit panes
+ - Ensure type select button is not focussable when TypedInput only has one type
+ - Place close tab link in front of fade
+
+Runtime
+
+ - Improve error reporting with oauth login strategies (#3148) @knolleary
+ - Add allowUpdate feature to externalModules.palette (#3143) @knolleary
+ - Improve node install error reporting (#3158) @knolleary
+ - Improve unit test coverage (#3168) @knolleary
+ - Allow coreNodesDir to be set to false (#3149) @hardillb
+ - Update package dependencies
+ - uncaughtException debug improvements (#3146) @renatojuniorrs
+
+Nodes
+
+ - Change: Add option to deep-clone properties in Change node (#3156) @knolleary
+ - Delay: Add push to front of rate limit queue. (#3069) @dceejay
+ - File: Add paletteLabel to file nodes to make read/write more obvious (#3157) @knolleary
+ - HTTP Request: Extend HTTP request node to log detailed timing information (#3116) @k-toumura
+ - HTTP Response: Fix sizing of HTTP Response header fields (#3164) @knolleary
+ - Join: Support for msg.restartTimeout (#3121) @magma1447
+ - Link Call: Add Link Call node (#3152) @knolleary
+ - Switch: Copy previous rule type when adding rule to switch node (#3170) @knolleary
+ - Delay node: add option to send intermediate messages on separate output (#3166) @knolleary
+ - Typo in http request set method translation (#3173) @mailsvb
+
+#### 2.0.6: Maintenance Release
+
+Editor
+
+ - Fix typo in ko editor.json Fixes #3119
+ - Change fade color when hovering an inactive tab (#3106) @bonanitech
+ - Ensure treeList row has suitable min-height when no content Fixes #3109
+
+Runtime
+
+ - Update tar to latest (#3128) @aksswami
+ - Give passport verify callback the same arity as the original callback (#3117) @dschmidt
+ - Handle HTTPS Key and certificate as string or buffer (#3115) @bartbutenaers
+
+#### 2.0.5: Maintenance Release
+
+Editor
+
+ - Remove default ctrl-enter keybinding from monaco editor Fixes #3093
+
+Runtime
+
+ - Update tar dependency
+ - Add support for maintenance streams in generate-publish-script
+
+
+Nodes
+
+ - Fix regression in Join node when manual joining array with msg.parts present Fixes #3096
+
+#### 2.0.4: Maintenance Release
+
+Editor
+
+ - Fix tab fade CSS for when using themes (#3085) @bonanitech
+ - Handle just-copied-but-not-deployed node with credentials in editor Fixes #3090
+
+Nodes
+
+ - Filter: Fix RBE node handling of default topi property Fixes #3087
+ - HTTP Request: Handle partially encoded url query strings in request node
+ - HTTP Request: Fix support for supplied CA certs (#3089) @hardillb
+ - HTTP Request: Ensure TLS Cert is used (#3092) @hardillb
+ - Inject: Fix inject now button unable to send empty props
+ - Inject: Inject now button success notification should use label with updated props
+
+#### 2.0.3: Maintenance Release
+
+Nodes
+
+ - HTML: Fix HTML parsing when body is included in the select tag Fixes #3079
+ - HTTP Request: Preserve case of user-provided http headers in request node Fixes #3081
+ - HTTP Request: Set decompress to false for HTTP Request to keep 1.x compatibility Fixes #3083
+ - HTTP Request: Add unit tests for HTTP Request encodeURI and error response
+ - HTTP Request: Do not throw HTTP errors in request node Fixes #3082
+ - HTTP Request: Ensure uri is properly encoded before passing to got module Fixes #3080
+
+#### 2.0.2: Maintenance Release
+
+Runtime
+
+ - Use file:// url with dynamic import
+ - Detect if agent-base has patched https.request and undo it Fixes #3072
+
+Editor
+
+ - Fix tab fade css because Safari Fixes #3073
+ - Fix error closing library dialog with monaco
+ - Handle other error types in Manage Palette view
+
+
+Nodes
+
+ - HTTP Request node - ignore invalid cookies rather than fail request Fixes #3075
+ - Fix msg.reset handling in Delay node Fixes #3074
+
 #### 2.0.1: Maintenance Release
 
 Nodes
